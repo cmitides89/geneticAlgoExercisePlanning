@@ -1,0 +1,24 @@
+{% import 'formmacro.html' as forms %}
+<html>
+    <body>
+        
+            
+        <form method="POST" action="{{url_for('show_exercise_form')}}">
+            {{ form.csrf_token }}
+            {{form.no_days.label}}
+            {{form.no_days}}
+            {{form.lvl_exp.label}}
+            {{form.lvl_exp}}
+            {{form.goal_type.label}}
+            {{form.goal_type}}
+            <input type="submit" value="submit">
+        </form>
+        {% for fieldName, errors in form.errors.items() %}
+            <div>
+                {{fieldName}}
+                {{errors}}
+            </div>
+        {% endfor %}
+        
+    </body>
+</html>
