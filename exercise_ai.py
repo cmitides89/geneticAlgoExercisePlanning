@@ -1,4 +1,5 @@
-import new_ga
+# import new_ga
+import genetic_class as gc
 from flask import Flask, render_template, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, RadioField
@@ -14,10 +15,11 @@ class RequirementsForm(FlaskForm):
                                                     ('3', '3 days a week'),
                                                     ('4', '4 days a week'),
                                                     ('5', '5 days a week')], validators=[InputRequired()])
-    lvl_exp = RadioField('Level of experience', choices=[('Beginner', 'Beginner'), (
-        'Intermediate', 'Intermediate'), ('Advanced', 'Advanced')], validators=[InputRequired()])
+    lvl_exp = RadioField('Level of experience', choices=[('beginner', 'Beginner'), (
+        'intermediate', 'Intermediate'), ('advanced', 'Advanced')], validators=[InputRequired()])
     goal_type = RadioField('Goal', choices=[(
         'Hypertrophy', 'Hypertrophy'), ('Strength', 'Strength')], validators=[InputRequired()])
+    no_ex = RadioField('Number of Exercises', choices=[('4','4'),('5','5'),('6','6'),('7','7')], validators=[InputRequired()])
 
 # routes set up
 @app.route('/', methods = ['POST','GET'])
@@ -26,10 +28,15 @@ def show_exercise_form():
     # number of days
     # level of experience
     # plan type (strenght, hypertrophy)
-    # sugessted number of exercises?
+    # sugessted number of exercises
     ga_input = RequirementsForm()
     if ga_input.validate_on_submit():
-        return new_ga.start_GA(ga_input.lvl_exp.data, ga_input.goal_type.data, ga_input.no_days.data)
+        gen_c =  gc.Genetic_Class(ga_input.lvl_exp.data,
+        ga_input.goal_type.data,
+        ga_input.no_days.data,
+        ga_input.no_ex.data)
+        result_list = gen_c.create_genes(gene_type='lowerbody')
+        return render_template('exercise_result.html', results = result_list)
     return render_template('exerciseform.html', form=ga_input)
 
 # @app.route('/results', methods=['POST'])

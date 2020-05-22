@@ -12,6 +12,12 @@ from sklearn import preprocessing
 from timeit import default_timer as timer
 from ast import literal_eval
 
+ex_gene_pool = None
+usr_lvl = None
+goal = None
+no_days = None
+no_exs = None
+
 def create_total_genes(ex_len):
   if usr_lvl == 'beginner':
     ex_genes = ex_gene_pool[ex_gene_pool['level'] == 'beginner']
@@ -484,172 +490,11 @@ def test_shit(micro_series):
   print(m_df['exercises'])
   time.sleep(.3)
   
-# TODO: convert this into a starting funciton to be called from web app
-# instead of csv use a mongodb instance
-# if __name__ == '__main__':
-#     ex_gene_pool = pd.read_csv('cleaned_ex_genes.csv', index_col=0)
-#     ex_cols = ex_gene_pool.columns
-#     usr_lvl = 'beginner'
-#     goal = 'strength'
-#     no_days = 4
-#     no_exs = 5
-#     mutation_rate = 0.01
-#     pop_size = 1000
-#     m_pop_size = 600
-#     day_cols = ['day', 'day_rating', 'day_type', 'exercises', 'ex_l_len','goal','usr_lvl']
-#     # creation of days
-#     dna_days_upper = pd.DataFrame(index=range(pop_size),columns = day_cols)
-#     dna_days_lower = pd.DataFrame(index=range(pop_size),columns = day_cols)
-#     gen_tracker = pd.DataFrame(columns = ['gen_num','score','norm_score'])
-#     gen_tracker_lw = pd.DataFrame(columns = ['gen_num','score','norm_score'])
-
-#     # INIT DAY PHENO TYPES
-#     dna_days_upper = dna_days_upper.apply(lambda x: create_up_day_pheno(no_exs, usr_lvl, goal), axis = 1)
-#     dna_days_lower = dna_days_lower.apply(lambda x: create_lw_day_pheno(no_exs, usr_lvl, goal), axis = 1)
-    
-#     # RATE THE INIT PHENOS
-#     dna_days_upper['day_rating'] = dna_days_upper.apply(aggregated_day_rating, axis=1)
-#     dna_days_lower['day_rating'] = dna_days_lower.apply(aggregated_day_rating, axis=1)
-
-#     # NORMALIZE THE DAY RATING
-#     normalize_day_rating(dna_days_upper)
-#     normalize_day_rating(dna_days_lower)
-#     dna_days_upper.to_csv('FIRST_UP_13_OG.csv')
-#     dna_days_lower.to_csv('FIRST_LW_13_OG.csv')
-
-#     # CREATE AN (INITIAL) MATING POOL BASED ON NORM SCORES
-#     # AND TRACKING THE GENERATION NUMBER RATINGS
-#     upper_mating_pool = generate_mating_pool(dna_days_upper)
-#     gen_num = 0
-#     gen_tracker['gen_num'] = np.full(pop_size, gen_num)
-#     gen_tracker['score'] = dna_days_upper['day_rating']
-#     gen_tracker['norm_score'] = dna_days_upper['normalized_score']
-
-#     lower_mating_pool = generate_mating_pool(dna_days_lower)
-#     gen_num_lw = 0
-#     gen_tracker_lw['gen_num'] = np.full(pop_size, gen_num_lw)
-#     gen_tracker_lw['score'] = dna_days_lower['day_rating']
-#     gen_tracker_lw['norm_score'] = dna_days_lower['normalized_score']
-    
-#     score_diff = 0
-#     score_diff_lw = 0
-
-#     prev_score = np.mean(dna_days_upper['normalized_score'])
-#     prev_score_lw = np.mean(dna_days_lower['normalized_score'])
-#     curr_score = 0
-#     curr_score_lw = 0
-#     # TODO: REPLACE THIS WHILE LOOP WITH THE ONE FURTHER DOWN
-#     # GENERATIONS AFTER INIT STOP AT CONVERGENCE OF RATINGS
-#     while (score_diff < .01) and (score_diff_lw < .01):
-#       prev_score = np.mean(dna_days_upper['normalized_score'])
-#       prev_score_lw = np.mean(dna_days_lower['normalized_score'])
-#       gen_num += 1
-#       gen_num_lw += 1
-#       # CREATE THE NEXT GENERATION AFTER INIT
-#       dna_days_upper = dna_days_upper.apply(create_next_gen, axis=1)
-#       dna_days_lower = dna_days_lower.apply(create_next_gen, axis=1)
-
-#       # RATE THE NEW GENERATION
-#       dna_days_upper['day_rating'] = dna_days_upper.apply(
-#           aggregated_day_rating, axis=1)
-      
-#       dna_days_lower['day_rating'] = dna_days_lower.apply(
-#           aggregated_day_rating, axis=1)
-
-#       # NORMALIZE NEXT GEN SCORES
-#       normalize_day_rating(dna_days_upper)
-#       curr_score = np.mean(dna_days_upper['normalized_score'])
-
-#       normalize_day_rating(dna_days_lower)
-#       curr_score_lw = np.mean(dna_days_lower['normalized_score'])
-
-#       # CREATE THE MATING POOL OF NEXT GEN
-#       upper_mating_pool = generate_mating_pool(dna_days_upper)
-#       lower_mating_pool = generate_mating_pool(dna_days_lower)
-      
-#       score_diff = curr_score - prev_score
-#       score_diff_lw = curr_score_lw - prev_score_lw
-#       # concatenate the new gen's mating pool with the existing one
-#       # upper_mating_pool = pd.concat([upper_mating_pool, generate_mating_pool(dna_days_upper)], ignore_index=True, copy=False)
-#       # shuffle the matingpool inplace and reset the index
-#       # upper_mating_pool = upper_mating_pool.sample(frac=1).reset_index(drop=True)
-
-#       # PROGRESS TRACKING
-#       gen_df = pd.DataFrame(
-#           {'gen_num': np.full(pop_size, gen_num), 'score': dna_days_upper['day_rating'], 'norm_score': dna_days_upper['normalized_score']})
-#       gen_tracker = gen_tracker.append(gen_df, ignore_index=True)
-#     dna_days_upper.to_csv('LAST_UPPER_GEN_OG.csv')
-#     gen_tracker.to_csv('upper_generation_score_OG.csv')
-#     print('finished days ')
-#     gen_df_lw = pd.DataFrame(
-#         {'gen_num': np.full(pop_size, gen_num), 'score': dna_days_lower['day_rating'], 'norm_score': dna_days_lower['normalized_score']})
-#     gen_tracker_lw = gen_tracker_lw.append(gen_df_lw, ignore_index=True)
-#     dna_days_lower.to_csv('LAST_LOWER_GEN_OG.csv')
-#     gen_tracker_lw.to_csv('lower_generation_score_OG.csv')
-
-#     """
-#     NOTE: NEXT STEPS: FROM THE DAYS CREATE USE THEM AS GENES FOR MICROCYCLES
-#     Combine the upper days and lower days into one gene pool
-#     Generate pheno types of microcycles using days as genes
-#     Rate microcycle, (include score from days)
-#     Mating Pool of Microcycles
-#     """
-#     # THIS DATAFRAME WILL TRACK THE PROGRESS OF ALL GENERATIONS OF MICROCYCLES
-#     gen_m_tracker = pd.DataFrame(columns = ['gen_num','score','norm_score'])
-
-#     if usr_lvl == 'beginner' and no_days == 4:
-#       print('starting microcycle')
-#       micro_cols = ['micro_rating','workingdays','usr_lvl','micro_type']
-#       n_day_cols = ['day', 'day_rating', 'day_type', 'exercises',
-#                     'ex_l_len', 'goal', 'usr_lvl', 'normalized_score', 'pop_num']
-#       dna_microcycles = pd.DataFrame(
-#           index=range(m_pop_size), columns=micro_cols)
-
-#       microcyc_gene_pool = dna_days_upper.append(dna_days_lower, ignore_index=True)
-#       # only choose days that are moderate to high score.
-#       microcyc_gene_pool = microcyc_gene_pool[microcyc_gene_pool['day_rating'] > 2000]
-#       dna_microcycles = dna_microcycles.apply(lambda x: create_micro_pheno(no_days, usr_lvl, goal), axis = 1)
-#       dna_microcycles['micro_rating'] = dna_microcycles.apply(aggregated_micro_rating, axis =1)
-
-#       # COMPLETED: normalize microcyc score
-#       normalize_micro_rating(dna_microcycles)
-#       # COMPLETED: generate mating pool for microcyc
-#       micro_mating_pool = generate_m_mating_pool(dna_microcycles)
-#       # GENERATION NUMBER OF EACH MICROCYCLE GENERATION
-#       m_gen_num = 0
-#       score_diff = 0
-#       prev_score = np.mean(dna_microcycles['normalized_score'])
-#       curr_score = 0
-#       # POPULATING INITIAL COLUMNS OF TRACKER 
-#       gen_m_tracker['gen_num'] = np.full(m_pop_size, m_gen_num)
-#       gen_m_tracker['score'] = dna_microcycles['micro_rating']
-#       gen_m_tracker['norm_score'] = dna_microcycles['normalized_score']
-
-#       # while(score_diff < .1):
-#       for i in loadbar(range(1600)):
-#         m_gen_num += 1
-#         # prev_score = np.mean(dna_microcycles['normalized_score'])
-#         dna_microcycles = dna_microcycles.apply(create_next_gen_micro, axis =1)
-      
-#         dna_microcycles['micro_rating'] = dna_microcycles.apply(aggregated_micro_rating, axis=1)
-#         normalize_micro_rating(dna_microcycles)
-#         # curr_score = np.mean(dna_microcycles['normalized_score'])
-
-#         micro_mating_pool = generate_m_mating_pool(dna_microcycles)
-#         # score_diff = curr_score - prev_score
-#         # UPDATE TRACKER WITH NEXT GENERATION
-#         m_gen_df = pd.DataFrame({'gen_num': np.full(
-#             m_pop_size, m_gen_num), 'score': dna_microcycles['micro_rating'], 'norm_score': dna_microcycles['normalized_score']})
-#         gen_m_tracker = gen_m_tracker.append(m_gen_df, ignore_index=True)
-
-      
-#       gen_m_tracker.to_csv('microcycles_generations_14.csv')
-#       print('finished microcycle')
-#       dna_microcycles.to_csv('MICROCYCLES_OG_14.csv')
-
 # TODO: find out if no_exs affects plan creation - dont want to cause errors
 # TODO: for dev purposes import the cleaned genes csv, but need to move it to mongodb instance
 def start_GA(usr_lvl, goal, no_days):
+  global no_exs
+  global ex_gene_pool 
   ex_gene_pool = pd.read_csv('cleaned_ex_genes.csv', index_col=0)
   ex_cols = ex_gene_pool.columns
   no_exs = 5
