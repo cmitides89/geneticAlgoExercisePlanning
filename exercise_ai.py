@@ -35,7 +35,8 @@ def show_exercise_form():
         ga_input.goal_type.data,
         ga_input.no_days.data,
         ga_input.no_ex.data)
-        result_list = gen_c.create_genes(gene_type='lowerbody')
+        result_list = gen_c.create_day_pheno(gene_type='lowerbody')
+        print(result_list)
         return render_template('exercise_result.html', results = result_list)
     return render_template('exerciseform.html', form=ga_input)
 

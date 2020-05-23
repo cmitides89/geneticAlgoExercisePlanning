@@ -1,8 +1,9 @@
 <html>
     <body>
         <div>
-            {%for exercise in results%}
-                <p>{{exercise}}</p>
+            {%for key, value in results.iteritems()%}
+                <p>{{key}}:{{value}}</p>
+
             {%endfor%}
         </div>
     </body>
