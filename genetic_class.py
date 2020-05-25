@@ -134,14 +134,14 @@ class Genetic_Class:
         mutation_chance() function
         '''
         if day_series['day_type'] == 'upperbody':
-            parents_df = upper_mating_pool.sample(n=2)
+            parents_df = self.upper_mating_pool.sample(n=2)
         elif day_series['day_type'] == 'lowerbody':
-            parents_df = lower_mating_pool.sample(n=2)
+            parents_df = self.lower_mating_pool.sample(n=2)
         else:
             # parents_df = mix_mating_pool.sample(n=2)
             print('TODO: add mixed mating pool')
-        child = day_crossover(parents_df, day_series['ex_l_len'], day_series['usr_lvl'], day_series['goal'])
-        child = day_mutation_chance(mutation_rate, child)
+        child = self.day_crossover(parents_df, day_series['ex_l_len'], day_series['usr_lvl'], day_series['goal'])
+        child = self.day_mutation_chance(self.mutation_rate, child)
         return child
     
 
@@ -174,7 +174,7 @@ class Genetic_Class:
         if not mutatable_children.empty:
             # print('BEFORE COMBINE FIRST IN MUTATION:::::')
             # print(child_ex_df)
-            mutated_children = mutation(mutatable_children)
+            mutated_children = self.mutation(mutatable_children)
             # print('MUTATED CHILDREN ::::')
             # print(mutated_children)
             child_ex_df = mutated_children.combine_first(child_ex_df)
@@ -194,6 +194,7 @@ class Genetic_Class:
 
     def validate_ex_cascade(self, ex_data, goal, usr_lvl):
         mvmnt_arr = ex_data['movement_size'].values
+        
         if goal == 'strength' and usr_lvl == 'beginner':
             condition1 = np.array(['Largest', 'Large', 'Medium', 'Medium'])
             rmng_ex = (len(mvmnt_arr) - 4)
@@ -234,13 +235,13 @@ class Genetic_Class:
     def aggregated_day_rating(self, day_series):
         ex_df = pd.DataFrame(day_series['exercises'])
         total_points = 0
-        total_points += dup_check(ex_df)
-        total_points += validate_ex_cascade(ex_df,
+        total_points += self.dup_check(ex_df)
+        total_points += self.validate_ex_cascade(ex_df,
                                             day_series['goal'], day_series['usr_lvl'])
         # COMPLETED: reimplement fullbody, original code is using lists make it use np array
         if day_series.day_type == 'fullbody':
             # COMPLETED: reimplement this from old code
-            total_points += rate_fbody_day(ex_df)
+            total_points += self.rate_fbody_day(ex_df)
         return total_points
 
 
@@ -255,7 +256,7 @@ class Genetic_Class:
     
     
     def create_micro_pheno(self, no_days, usr_lvl, goal):
-        working_days = microcyc_gene_pool.sample(n=no_days)
+        working_days = self.microcyc_gene_pool.sample(n=no_days)
         # NOTE: added this conversion DATE: 10/31/2019
         working_days = working_days.to_dict('records')
         microcycle = {'micro_rating':'', 'workingdays': working_days, 'usr_lvl':usr_lvl, 'micro_type':goal}
@@ -346,10 +347,10 @@ class Genetic_Class:
         if isinstance(micro_series['workingdays'], str):
             working_days = literal_eval(micro_series['workingdays'])
             print('converted to list')
-            working_days = pd.DataFrame(working_days, columns = n_day_cols)
+            working_days = pd.DataFrame(working_days, columns = self.n_day_cols)
             print('now dataframe')
         else:
-            working_days = pd.DataFrame(micro_series['workingdays'], columns = n_day_cols)
+            working_days = pd.DataFrame(micro_series['workingdays'], columns = self.n_day_cols)
         total_points = 0
         if working_days.day_rating.values.sum() < 9000:
             total_points += -3000
@@ -357,9 +358,9 @@ class Genetic_Class:
             # NOTE ADDED ADDITIONAL POINTS
             total_points += 3500
         total_points += working_days.day_rating.values.sum()
-        total_points += no_dup_days(working_days)
-        if no_days == 4:
-            total_points += assess_4_day(working_days)
+        total_points += self.no_dup_days(working_days)
+        if self.no_days == 4:
+            total_points += self.assess_4_day(working_days)
         # print(total_points)
         return total_points
 
@@ -409,6 +410,29 @@ class Genetic_Class:
         mutated_df = mutated_df.append(self.microcyc_gene_pool.sample(n=len(mutatable_df)), ignore_index=True, sort=True)
         mutated_df.index = mutatable_df.index
         return mutated_df
+
+
+    def micro_4_evolution(self, m_pop_size):
+        dna_microcycles = pd.DataFrame(index=range(m_pop_size), columns = self.micro_cols)
+        microcyc_gene_pool = self.dna_days_upper.append(
+            self.dna_days_lower, ignore_index=True)
+        # only choose days that are moderate to high score.
+        microcyc_gene_pool = self.microcyc_gene_pool[self.microcyc_gene_pool['day_rating'] > 2000]
+        dna_microcycles = dna_microcycles.apply(
+            lambda x: self.create_micro_pheno(self.no_days, self.usr_lvl, self.goal), axis=1)
+        dna_microcycles['micro_rating'] = dna_microcycles.apply(
+            self.aggregated_micro_rating, axis=1)
+
+        self.normalize_micro_rating(dna_microcycles)
+        self.mico_mating_pool = self.generate_m_mating_pool(dna_microcycles)
+        for _ in range(m_pop_size):
+            dna_microcycles = dna_microcycles.apply(self.create_next_gen_micro, axis=1)
+            dna_microcycles['micro_rating'] = dna_microcycles.apply(self.aggregated_micro_rating, axis=1)
+            self.normalize_micro_rating(dna_microcycles)
+
+            self.micro_mating_pool = self.generate_m_mating_pool(dna_microcycles)
+
+            return dna_microcycles
 
 
     def start_evolution(self):
@@ -467,6 +491,8 @@ class Genetic_Class:
             self.lower_mating_pool = self.generate_mating_pool(dna_days_lower)
             score_diff = curr_score - prev_score
             score_diff_lw = curr_score_lw - prev_score_lw
+        
+
             """
             NOTE: NEXT STEPS: FROM THE DAYS CREATE USE THEM AS GENES FOR MICROCYCLES
             Combine the upper days and lower days into one gene pool
@@ -474,3 +500,8 @@ class Genetic_Class:
             Rate microcycle, (include score from days)
             Mating Pool of Microcycles
             """
+        # TODO: different functions for each microcycle length type (4,3,2) etc
+        if self.usr_lvl == 'beginner' and self.no_days == 4:
+            self.micro_4_evolution(m_pop_size)
+        else:
+            return 'need to add more features'

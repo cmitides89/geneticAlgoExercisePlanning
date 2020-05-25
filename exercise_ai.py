@@ -18,7 +18,7 @@ class RequirementsForm(FlaskForm):
     lvl_exp = RadioField('Level of experience', choices=[('beginner', 'Beginner'), (
         'intermediate', 'Intermediate'), ('advanced', 'Advanced')], validators=[InputRequired()])
     goal_type = RadioField('Goal', choices=[(
-        'Hypertrophy', 'Hypertrophy'), ('Strength', 'Strength')], validators=[InputRequired()])
+        'Hypertrophy', 'Hypertrophy'), ('strength', 'Strength')], validators=[InputRequired()])
     no_ex = RadioField('Number of Exercises', choices=[('4','4'),('5','5'),('6','6'),('7','7')], validators=[InputRequired()])
 
 # routes set up
@@ -35,7 +35,10 @@ def show_exercise_form():
         ga_input.goal_type.data,
         ga_input.no_days.data,
         ga_input.no_ex.data)
-        result_list = gen_c.create_day_pheno(gene_type='lowerbody')
+
+        print(gen_c.usr_lvl, gen_c.goal, gen_c.no_days, gen_c.ex_len)
+        result_list = gen_c.start_evolution()
+        
         print(result_list)
         return render_template('exercise_result.html', results = result_list)
     return render_template('exerciseform.html', form=ga_input)
