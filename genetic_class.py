@@ -4,6 +4,7 @@ import pandas as pd
 from pandas.io.json import json_normalize
 import pprint
 import random
+
 # import ga_fit_func as gff
 import time
 # import experimental_mod as exmod
@@ -412,27 +413,27 @@ class Genetic_Class:
         return mutated_df
 
 
-    def micro_4_evolution(self, m_pop_size):
+    def micro_4_evolution(self, m_pop_size, dna_days_upper, dna_days_lower):
         dna_microcycles = pd.DataFrame(index=range(m_pop_size), columns = self.micro_cols)
-        microcyc_gene_pool = self.dna_days_upper.append(
-            self.dna_days_lower, ignore_index=True)
+        self.microcyc_gene_pool = dna_days_upper.append(
+            dna_days_lower, ignore_index=True)
         # only choose days that are moderate to high score.
-        microcyc_gene_pool = self.microcyc_gene_pool[self.microcyc_gene_pool['day_rating'] > 2000]
+        self.microcyc_gene_pool = self.microcyc_gene_pool[self.microcyc_gene_pool['day_rating'] > 2000]
         dna_microcycles = dna_microcycles.apply(
             lambda x: self.create_micro_pheno(self.no_days, self.usr_lvl, self.goal), axis=1)
         dna_microcycles['micro_rating'] = dna_microcycles.apply(
             self.aggregated_micro_rating, axis=1)
 
         self.normalize_micro_rating(dna_microcycles)
-        self.mico_mating_pool = self.generate_m_mating_pool(dna_microcycles)
+        self.micro_mating_pool = self.generate_m_mating_pool(dna_microcycles)
+        # print(self.micro_mating_pool)
         for _ in range(m_pop_size):
             dna_microcycles = dna_microcycles.apply(self.create_next_gen_micro, axis=1)
             dna_microcycles['micro_rating'] = dna_microcycles.apply(self.aggregated_micro_rating, axis=1)
             self.normalize_micro_rating(dna_microcycles)
 
             self.micro_mating_pool = self.generate_m_mating_pool(dna_microcycles)
-
-            return dna_microcycles
+        return dna_microcycles.sort_values(by='micro_rating', ascending=False)
 
 
     def start_evolution(self):
@@ -443,11 +444,11 @@ class Genetic_Class:
         '''
 
         pop_size = 1000
-        m_pop_size = 600
+        m_pop_size = 6
         dna_days_lower = pd.DataFrame(index=range(pop_size), columns=self.n_day_cols)
         dna_days_upper = pd.DataFrame(index=range(pop_size), columns=self.n_day_cols)
-        dna_microcycles = pd.DataFrame(index=range(m_pop_size), columns=self.micro_cols)
-        self.microcyc_gene_pool
+        # dna_microcycles = pd.DataFrame(index=range(m_pop_size), columns=self.micro_cols)
+        # self.microcyc_gene_pool
 
         dna_days_upper = dna_days_upper.apply(lambda x: self.create_day_pheno(gene_type = 'upperbody'), axis=1)
         dna_days_lower = dna_days_lower.apply(lambda x: self.create_day_pheno(gene_type = 'lowerbody'), axis=1)
@@ -499,9 +500,10 @@ class Genetic_Class:
             Generate pheno types of microcycles using days as genes
             Rate microcycle, (include score from days)
             Mating Pool of Microcycles
+            TODO: determine if its better to manually select days vs evolution 
             """
         # TODO: different functions for each microcycle length type (4,3,2) etc
         if self.usr_lvl == 'beginner' and self.no_days == 4:
-            self.micro_4_evolution(m_pop_size)
+            return self.micro_4_evolution(m_pop_size, dna_days_upper, dna_days_lower)
         else:
-            return 'need to add more features'
+            return 'need to add more features - stick to just four day plans for now'

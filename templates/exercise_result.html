@@ -1,10 +1,38 @@
+
 <html>
     <body>
         <div>
-            {%for key, value in results.iteritems()%}
-                <p>{{key}}:{{value}}</p>
+            {%for microcycl in results%}
+                {%set workingdays = microcycl['workingdays']%}
+                {%for workingday in workingdays%}
+                    {%set i = loop.index%}
+                     <h1>day: {{i}}</h1>
+                    {%for day_key,day_value in workingday.items()%}
+                        {%if day_key == 'exercises'%}
+                            <h2>Exercises</h2>
+                            {%set ex_l = day_value%}
+                            {%for ex in ex_l%}
+                                <h3>{{ex['ex_name']}}</h3>
+                                <p>{{ex['ex_equipment']}}</p>
+                                <p>reps: {{ex['reps']}}</p>
+                                <p>sets: {{ex['sets']}}</p>
+                            {%endfor%}
+                        {%endif%}
+                        
+                    {%endfor%}
+                {%endfor%}}
+            {%endfor%}}
+            {# {%for value in results%}
+                {%if 'workingdays' in value%}
+                    {% set ex_l = value['exercises']%}
+                    <h3>Exercises</h3>
+                    {%for e in ex_l%}
+                        <p>{{e}}</p>
+                    {%endfor%}
+                {%endif%}
+                <p>{{value}}</p>
 
-            {%endfor%}
+            {%endfor%} #}
         </div>
     </body>
 </html>
