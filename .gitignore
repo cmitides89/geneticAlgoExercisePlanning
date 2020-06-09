@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 cleaned_ex_genes.csv
+*.ipynb

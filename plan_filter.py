@@ -9,19 +9,59 @@ import pandas as pd
 def limit_one(result_list):
     '''
     Given the entire resulting dataframe of GA 
-    return only the Max score microcycle
+    discard unnecessary columns from user view
+    compress into one flat JSON vs nested
+    WHAT YOU NEED FROM THE MICOCYCL AS A USER:
+    1. GOAL/TYPE
+    2. EACH WORKING DAY, DAY# AS KEY
+    3. DAY TYPE
+    4. LIST OF EX PER DAY
+        4.1 FROM EX YOU ONLY NEED: EX_NAME, MAIN-MUSCLE-WORKED, REPS, SETS
+            EX_EQUIPMENT, EX_TYPE
     '''
     results_df = pd.DataFrame(result_list)
-    print(results_df.columns)
+    # print(results_df.columns)
     results_df.sort_values(by=['micro_rating'], ascending=True)
     best_plan = results_df.iloc[0]
-    print('first row best plan : ', best_plan)
+    # print('first row best plan : ', best_plan)
     # best_plan_output = best_plan[['workingdays','usr_lvl','micro_type']]
     workingdays = best_plan[['workingdays']].to_dict()
+    # workingdays = pd.DataFrame(workingdays)
     microcycl_info = best_plan[['usr_lvl','micro_type']].to_dict()
-    # print(workingdays)
-
     best_plan_output = {**workingdays, **microcycl_info}
     # print('in limit one, best plan output is: ', type(best_plan_output))
 
     return best_plan_output
+
+def flatten_microcyc(result_list):
+    '''
+    Input: List of microcycles generated from GA
+    Output: highest rated plan in a simplified view
+    (all features GA requires are removed)
+    transforming the data to a much simpler dictionary 
+    for easier front-end javascript traversal
+    '''
+    # convert list of micros into df to order easier
+    result_df = pd.DataFrame(result_list)
+    result_df.sort_values(by=['micro_rating'], ascending=True)
+
+    # get the first row of DF its the best plan of this generation
+    best_micro = result_df.iloc[0]
+
+    # generate the column names for the best microcycle
+    # each workingday needs a day_i
+    flatten_microcyc = dict()
+    for i, day in enumerate(best_micro['workingdays']):
+        
+        flatten_microcyc['day'+str(i+1)] = [day['day_type']]
+        flatten_microcyc['day'+str(i+1)].append({ex.get('ex_name'), 
+                                            ex.get('ex_equipment'), 
+                                            ex.get('main-muscle-worked'), 
+                                            ex.get('reps'), 
+                                            ex.get('sets')} for ex in day['exercises'])
+    print( 'flat micro: ', flatten_microcyc)
+        
+
+    
+    # print(type(exercises['workingdays']))
+    # return_plan = {key: None for key in bmic_keys}
