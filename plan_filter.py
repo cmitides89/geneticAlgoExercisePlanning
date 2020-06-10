@@ -5,7 +5,8 @@ from wtforms import StringField, SubmitField, RadioField
 from wtforms.validators import Required, InputRequired
 import json
 import pandas as pd
-
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 def limit_one(result_list):
     '''
     Given the entire resulting dataframe of GA 
@@ -69,19 +70,33 @@ def flatten_microcyc(result_list):
     # return_plan = {key: None for key in bmic_keys}
     # NOTE STARTING OVER
     days_list = best_micro['workingdays']
-    print('DAYS TYPE IS : ',type(days_list[0]))
-    return_columns = ['day'+str(i+1) for i in range(len(best_micro['workingdays']))]
-    print(return_columns)
-    days_df = pd.DataFrame(columns=return_columns)
-    for day in days_list:
+
+    all_days = dict()
+    # for each day in the day list, only get required information on ex
+    # for every ex, then put them in a dict where the key is day_i, and add that to the days dict output
+    for i, day in enumerate(days_list):
+        print('DAY==============', i)
+        # holds all exs from one day
         ex_dict = dict()
+        # FORMATTING SINGLE EXERCISE
         for exercise in day['exercises']:
-            ex_dict = {exercise['ex_name']:{'equipment':exercise['ex_equipment'], 
-                                    'main muscle':exercise['main-muscle-worked'],
-                                    'reps':exercise['reps'], 
-                                    'sets':exercise['sets']
-                                    }
+            # a single ex modified
+            ex_info = {exercise['ex_name']: {'equipment': exercise['ex_equipment'],
+                                             'main muscle': exercise['main-muscle-worked'],
+                                             'reps': exercise['reps'],
+                                             'sets': exercise['sets']
+                                             }
             }
-        days_df.append(pd.Series({day['day_type']:ex_dict}), ignore_index=True)
-    print(days_df)
+            # ADDING SINGLE EXERCISE TO EXERCISE GROUP
+            if not ex_dict:
+                ex_dict = ex_info
+            else:
+                ex_dict.update(ex_info)
+        # ADDING EXERCISE GROUP TO THE GROUP OF DAYS 
+        ex_dict['day type']= day['day_type']
+        all_days['day'+str(i+1)] = ex_dict
+        print('inside days loop')
+        pp.pprint(all_days)
+    print('outside of loop')
+    pp.pprint(all_days)
 
