@@ -50,18 +50,38 @@ def flatten_microcyc(result_list):
 
     # generate the column names for the best microcycle
     # each workingday needs a day_i
-    flatten_microcyc = dict()
-    for i, day in enumerate(best_micro['workingdays']):
+    # flatten_microcyc = dict()
+    # for i, day in enumerate(best_micro['workingdays']):
         
-        flatten_microcyc['day'+str(i+1)] = [day['day_type']]
-        flatten_microcyc['day'+str(i+1)].append({ex.get('ex_name'), 
-                                            ex.get('ex_equipment'), 
-                                            ex.get('main-muscle-worked'), 
-                                            ex.get('reps'), 
-                                            ex.get('sets')} for ex in day['exercises'])
-    print( 'flat micro: ', flatten_microcyc)
+    #     flatten_microcyc['day'+str(i+1)] = [day['day_type']]
+    #     flatten_microcyc['day'+str(i+1)].append({ex.get('ex_name'), 
+    #                                         ex.get('ex_equipment'), 
+    #                                         ex.get('main-muscle-worked'), 
+    #                                         ex.get('reps'), 
+    #                                         ex.get('sets')} for ex in day['exercises'])
+    # print( 'flat micro: ', flatten_microcyc)
+    
+
         
 
     
     # print(type(exercises['workingdays']))
     # return_plan = {key: None for key in bmic_keys}
+    # NOTE STARTING OVER
+    days_list = best_micro['workingdays']
+    print('DAYS TYPE IS : ',type(days_list[0]))
+    return_columns = ['day'+str(i+1) for i in range(len(best_micro['workingdays']))]
+    print(return_columns)
+    days_df = pd.DataFrame(columns=return_columns)
+    for day in days_list:
+        ex_dict = dict()
+        for exercise in day['exercises']:
+            ex_dict = {exercise['ex_name']:{'equipment':exercise['ex_equipment'], 
+                                    'main muscle':exercise['main-muscle-worked'],
+                                    'reps':exercise['reps'], 
+                                    'sets':exercise['sets']
+                                    }
+            }
+        days_df.append(pd.Series({day['day_type']:ex_dict}), ignore_index=True)
+    print(days_df)
+
