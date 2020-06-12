@@ -49,54 +49,44 @@ def flatten_microcyc(result_list):
     # get the first row of DF its the best plan of this generation
     best_micro = result_df.iloc[0]
 
-    # generate the column names for the best microcycle
-    # each workingday needs a day_i
-    # flatten_microcyc = dict()
-    # for i, day in enumerate(best_micro['workingdays']):
-        
-    #     flatten_microcyc['day'+str(i+1)] = [day['day_type']]
-    #     flatten_microcyc['day'+str(i+1)].append({ex.get('ex_name'), 
-    #                                         ex.get('ex_equipment'), 
-    #                                         ex.get('main-muscle-worked'), 
-    #                                         ex.get('reps'), 
-    #                                         ex.get('sets')} for ex in day['exercises'])
-    # print( 'flat micro: ', flatten_microcyc)
-    
-
-        
-
-    
-    # print(type(exercises['workingdays']))
-    # return_plan = {key: None for key in bmic_keys}
-    # NOTE STARTING OVER
     days_list = best_micro['workingdays']
 
-    all_days = dict()
+    # all_days = dict()
+    all_days_list = []
     # for each day in the day list, only get required information on ex
     # for every ex, then put them in a dict where the key is day_i, and add that to the days dict output
     for i, day in enumerate(days_list):
-        print('DAY==============', i)
+        # print('DAY==============', i)
         # holds all exs from one day
-        ex_dict = dict()
+        # ex_dict = dict()
+        ex_list = []
         # FORMATTING SINGLE EXERCISE
         for exercise in day['exercises']:
             # a single ex modified
-            ex_info = {exercise['ex_name']: {'equipment': exercise['ex_equipment'],
-                                             'main muscle': exercise['main-muscle-worked'],
-                                             'reps': exercise['reps'],
-                                             'sets': exercise['sets']
-                                             }
-            }
+            ex_info = {'ex_name':exercise['ex_name'],
+                        'equipment': exercise['ex_equipment'],
+                            'main_muscle': exercise['main-muscle-worked'],
+                            'reps': exercise['reps'],
+                            'sets': exercise['sets']
+                        }
+            
             # ADDING SINGLE EXERCISE TO EXERCISE GROUP
-            if not ex_dict:
-                ex_dict = ex_info
-            else:
-                ex_dict.update(ex_info)
+            # if not ex_dict:
+            #     ex_dict = ex_info
+            # else:
+            #     ex_dict.update(ex_info)
+            ex_list.append(ex_info)
+        # ex_list.append({'day_type':day['day_type']})
         # ADDING EXERCISE GROUP TO THE GROUP OF DAYS 
-        ex_dict['day type']= day['day_type']
-        all_days['day'+str(i+1)] = ex_dict
-        print('inside days loop')
-        pp.pprint(all_days)
-    print('outside of loop')
-    pp.pprint(all_days)
+        # ex_dict['day type']= day['day_type']
+        # all_days['day'+str(i+1)] = ex_dict
+        # all_days_list.append(ex_dict)
+        # all_days_list.append({'day':({'exercises':ex_list}, {'day_type':day['day_type']})})
+        all_days_list.append(
+            {'day':ex_list, 'day_type':day['day_type']})
+        # print('inside days loop')
+        # pp.pprint(all_days)
+    # print('outside of loop')
+    # pp.pprint(all_days)
+    return all_days_list
 
