@@ -53,19 +53,19 @@ def show_exercise_form():
         inputs = request.json
         # print(type(inputs))
         # print(inputs)
+        print('recieved inputs')
         gen_c = gc.Genetic_Class(inputs['LevelOfExp'], inputs['goalType'], inputs['NumberOfDays'], inputs['NumberOfExercises'])
         result_list = gen_c.start_evolution()
         # TODO: Cut out the unnecessary data before sending to front end. you only want to save the top 
         # 5 programs
-        single_best_plan = pf.limit_one(result_list)
+        # single_best_plan = pf.limit_one(result_list)
         # print(type(single_best_plan))
         # return jsonify(json.loads(result_list.to_json(orient='records')))
         # print(type(single_best_plan))
         # print('jsonified:::::::::: ',type(jsonify(single_best_plan)))
         # print(len(single_best_plan))
-        print(pf.flatten_microcyc(result_list))
-        return (jsonify(single_best_plan))
-        
+        # print(pf.flatten_microcyc(result_list))
+        return (jsonify(pf.flatten_microcyc(result_list)))
     return 'lol'
 # @app.route('/results', methods=['POST'])
 # def results():
