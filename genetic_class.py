@@ -28,12 +28,17 @@ class Genetic_Class:
         self.ex_len = int(no_exs)
         self.upper_mating_pool = None
         self.lower_mating_pool = None
+        self.full_mating_pool = None
         self.micro_mating_pool = None
         self.microcyc_gene_pool = None
         # COMPLETED: set mutation rate
         self.mutation_rate = 0.01
 # combined total,lower,upper from new_ga
     def create_genes(self, gene_type = None):
+        '''
+        gene_type default to None, creates 
+        genes for fullbody 
+        '''
         if gene_type:
             ex_genes = self.ex_gene_pool[(self.ex_gene_pool['muscle_group'] == gene_type)&(self.ex_gene_pool['level'] == self.usr_lvl)]
         else:
@@ -62,7 +67,9 @@ class Genetic_Class:
 
 # combined the up day lwday and fb day from new_ga
     def create_day_pheno(self, gene_type):
+        '''
         # generate exercises based on gene type aka genes for a day pheno
+        '''
         if gene_type == 'lowerbody' or gene_type == 'upperbody':
             exercises = self.create_genes(gene_type)
         else:
@@ -412,7 +419,9 @@ class Genetic_Class:
         mutated_df.index = mutatable_df.index
         return mutated_df
 
-
+    def micro_3_evolution(self, m_pop_size, dna_days_upper, dna_days_lower):
+        pass
+    # USED IN START EVO
     def micro_4_evolution(self, m_pop_size, dna_days_upper, dna_days_lower):
         dna_microcycles = pd.DataFrame(index=range(m_pop_size), columns = self.micro_cols)
         self.microcyc_gene_pool = dna_days_upper.append(
@@ -438,6 +447,7 @@ class Genetic_Class:
 
     def start_evolution(self):
         '''
+        NOTE DAY DNA GETS INITALIZED AND ASSIGNED HERE [UPPER, LOWER, FULL]
         NOTE POTENTIAL ISSUES: be mindful of the column names, I made them constant vars of the class
         they might cause issues if they are the wrong amount of columns
         original implemntation first created day cols w.o norm score and popnum then eventually added them
@@ -505,5 +515,8 @@ class Genetic_Class:
         # TODO: different functions for each microcycle length type (4,3,2) etc
         if self.usr_lvl == 'beginner' and self.no_days == 4:
             return self.micro_4_evolution(m_pop_size, dna_days_upper, dna_days_lower)
+        elif(self.usr_lvl == 'beginner' and self.no_days == 3):
+            # TODO implement 3 day, 2_day
+            return 
         else:
             return 'need to add more features - stick to just four day plans for now'
