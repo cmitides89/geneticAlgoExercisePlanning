@@ -349,6 +349,15 @@ class Genetic_Class:
         np.multiply(200, arr_val_c, out=arr_val_c, where=arr_val_c == 1)
         # print('no dup days sum for 4 days ',arr_val_c.sum())
         return arr_val_c.sum()
+    
+    def no_dup_days_comparable(self, day, day_pool):
+        comp_day = pd.DataFrame(columns = ['day','day_rating','day_type','exercises',
+        'ex_l_len','goal','usr_lvl','normalized_score','pop_num'])
+        # make sure the days selected are a good rating
+        # NOTE: may need to change from max to a range
+        day_pool = day_pool[day_pool['day_rating'] == day_pool['day_rating'].max()]
+        
+        return comp_day
 
     def aggregated_micro_rating(self, micro_series):
         # print(micro_series['workingdays'].columns)
@@ -443,7 +452,20 @@ class Genetic_Class:
 
             self.micro_mating_pool = self.generate_m_mating_pool(dna_microcycles)
         return dna_microcycles.sort_values(by='micro_rating', ascending=False)
+    
+    def create_micro(self):
+        microcyc = pd.DataFrame(columns=['day','day_rating','day_type','exercises',
+        'ex_l_len','goal','usr_lvl','normalized_score','pop_num'])
 
+        '''
+        if no_day == 4
+            get 1 A_day of day_type y and high rating
+            get 1 B_day of day_type y that is not A_day and high rating
+            get 1 A_day of day_type z and high rating
+            get 1 B_day of day_type z that is not A_day and high rating
+        '''
+        if self.no_days == 4:
+            microcyc.append(self.upper_mating_pool[self.upper_mating_pool['day_rating'] > 2000])
 
     def start_evolution(self):
         '''
