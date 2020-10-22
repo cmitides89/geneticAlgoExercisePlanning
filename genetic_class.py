@@ -351,12 +351,21 @@ class Genetic_Class:
         return arr_val_c.sum()
     
     def no_dup_days_comparable(self, day, day_pool):
+        '''
+        Given a day pool, get only the top rated days
+        Return a day from day_pool if it's exercises are not the same as day's exercises
+        '''
         comp_day = pd.DataFrame(columns = ['day','day_rating','day_type','exercises',
         'ex_l_len','goal','usr_lvl','normalized_score','pop_num'])
-        # make sure the days selected are a good rating
         # NOTE: may need to change from max to a range
+        # make sure the days selected are a good rating
         day_pool = day_pool[day_pool['day_rating'] == day_pool['day_rating'].max()]
-        
+       
+        comp_day = day_pool.apply(lambda d: d
+         if np.array_equal(d['exercises'].values, day['exercises'].values)
+         is False 
+         else None , axis=1)
+        print(comp_day)
         return comp_day
 
     def aggregated_micro_rating(self, micro_series):
