@@ -355,18 +355,36 @@ class Genetic_Class:
         Given a day pool, get only the top rated days
         Return a day from day_pool if it's exercises are not the same as day's exercises
         '''
+        ex_cols = ['ex_name',
+            'muscle_group','ex_mech_type','ex_type','ex_equipment','level',
+            'reps','sets','main-muscle-worked','movement_size','load_size']
+
         comp_day = pd.DataFrame(columns = ['day','day_rating','day_type','exercises',
         'ex_l_len','goal','usr_lvl','normalized_score','pop_num'])
         # NOTE: may need to change from max to a range
         # make sure the days selected are a good rating
         day_pool = day_pool[day_pool['day_rating'] == day_pool['day_rating'].max()]
-       
-        comp_day = day_pool.apply(lambda d: d
-         if np.array_equal(d['exercises'].values, day['exercises'].values)
-         is False 
-         else None , axis=1)
-        print(comp_day)
-        return comp_day
+        print('===================')
+        
+        day_ex_names = pd.DataFrame(day['exercises'], columns = ex_cols)
+
+        for _, day_comp in day_pool.iterrows():
+            if not self.compare_day_exs(day, day_comp):
+                print('day_comp is the not same as day')
+                print(day_comp)
+            else:
+                print('PLOOP')
+                
+                print('PLOOP')
+                return day_comp
+    
+    def compare_day_exs(self, day, comp_day):
+        day_ex = pd.DataFrame(day['exercises'])
+        comp_day_ex = pd.DataFrame(comp_day['exercises'])
+        print(day_ex)
+        print(comp_day_ex)
+
+        return np.array_equal(day_ex.values, comp_day_ex.values)
 
     def aggregated_micro_rating(self, micro_series):
         # print(micro_series['workingdays'].columns)
@@ -545,7 +563,9 @@ class Genetic_Class:
             """
         # TODO: different functions for each microcycle length type (4,3,2) etc
         if self.usr_lvl == 'beginner' and self.no_days == 4:
-            return self.micro_4_evolution(m_pop_size, dna_days_upper, dna_days_lower)
+            # return self.micro_4_evolution(m_pop_size, dna_days_upper, dna_days_lower)
+            # NOTE: testing no dup days comparable
+            print(self.no_dup_days_comparable(self.upper_mating_pool.iloc[[0]], self.upper_mating_pool))
         elif(self.usr_lvl == 'beginner' and self.no_days == 3):
             # TODO implement 3 day, 2_day
             return 
