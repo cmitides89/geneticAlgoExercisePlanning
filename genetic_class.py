@@ -21,6 +21,7 @@ class Genetic_Class:
                   'ex_l_len', 'goal', 'usr_lvl', 'normalized_score', 'pop_num']
     micro_cols = ['micro_rating', 'workingdays', 'usr_lvl', 'micro_type']
 
+
     def __init__(self, usr_lvl, goal, no_days, no_exs):
         self.usr_lvl = usr_lvl
         self.goal = goal
@@ -33,6 +34,8 @@ class Genetic_Class:
         self.microcyc_gene_pool = None
         # COMPLETED: set mutation rate
         self.mutation_rate = 0.01
+
+
 # combined total,lower,upper from new_ga
     def create_genes(self, gene_type = None):
         '''
@@ -65,6 +68,7 @@ class Genetic_Class:
 
         return ex_df.to_dict('records')
 
+
 # combined the up day lwday and fb day from new_ga
     def create_day_pheno(self, gene_type):
         '''
@@ -84,6 +88,7 @@ class Genetic_Class:
         # print(day_series)
 
         return day_series
+
 
 # TODO: find a way to merge function for day and microcycle
     def generate_mating_pool(self, day_dna_df):
@@ -109,7 +114,8 @@ class Genetic_Class:
             day_dna_df['pop_num'].values.astype(int)), :]
 
         return day_dna_df
-    
+
+
     def generate_m_mating_pool(self, micro_dna):
         ''' 
         Takes DNA for a Microcycle type: DataFrame 
@@ -134,7 +140,8 @@ class Genetic_Class:
         # micro_dna.to_csv('MICRO_DNA.csv')
         # print('CREATED MICRO POOL')
         return micro_dna    
-    
+
+
     def create_next_gen(self, day_series):
         '''
         Takes a Day Type: series and based on day_type determines which 
@@ -174,6 +181,7 @@ class Genetic_Class:
         # print(type(child['exercises']))
         return child
 
+
     def day_mutation_chance(self, mutation_rate, child):
         child_ex_df = pd.DataFrame(child['exercises'])
         child_ex_df['rand_chance'] = np.random.uniform(low=0,high=1,size=child_ex_df.shape[0])
@@ -192,6 +200,7 @@ class Genetic_Class:
             child['exercises'] = child_ex_df.to_dict('records')
         return child
 
+
     def mutation(self, mutatable_df):
 
         mutated_df = pd.DataFrame(columns = mutatable_df.columns)
@@ -199,6 +208,7 @@ class Genetic_Class:
         mutated_df.index = mutatable_df.index
 
         return mutated_df
+
 
     def validate_ex_cascade(self, ex_data, goal, usr_lvl):
         mvmnt_arr = ex_data['movement_size'].values
@@ -219,6 +229,7 @@ class Genetic_Class:
 
         return result.sum()
 
+
     def dup_check(self, ex_data):
         points = 0
         ex_data = pd.value_counts(ex_data['ex_name'].values, sort=False)
@@ -227,7 +238,8 @@ class Genetic_Class:
         np.multiply(10, ex_np_arr, out=ex_np_arr, where = ex_np_arr == 1)
         points = ex_np_arr.sum()
         return points
-    
+
+
     def unqiue_type_check(self, ex_data):
         # TODO:TEST THIS
         # NOTE: NOT CURRENTLY USING, UNSURE IF NEEDED
@@ -270,6 +282,7 @@ class Genetic_Class:
         microcycle = {'micro_rating':'', 'workingdays': working_days, 'usr_lvl':usr_lvl, 'micro_type':goal}
         return pd.Series(microcycle)
 
+
     def assess_4_day(self, wdays):
         """
         Extract the values of the day types
@@ -309,9 +322,11 @@ class Genetic_Class:
         result = np.select(conditions, choices, default=- 2000)
         return result.sum()
 
+
 # TODO: implement 2day assessment
     def assess_2_day(self, wdays):
         pass
+
 
     def rate_fbody_day(self, ex_df):
         points = 0
@@ -328,6 +343,7 @@ class Genetic_Class:
         choices = [2500,2500]
         result = np.select(conditions, choices, default=-3500)
         return result.sum()
+
 
     def no_dup_days(self, wdays):
         """
@@ -349,7 +365,8 @@ class Genetic_Class:
         np.multiply(200, arr_val_c, out=arr_val_c, where=arr_val_c == 1)
         # print('no dup days sum for 4 days ',arr_val_c.sum())
         return arr_val_c.sum()
-    
+
+
     def no_dup_days_comparable(self, day, day_pool):
         '''
         Given a day pool, get only the top rated days
@@ -374,10 +391,11 @@ class Genetic_Class:
     def compare_day_exs(self, day, comp_day):
         day_ex = pd.DataFrame(day['exercises'])
         comp_day_ex = pd.DataFrame(comp_day['exercises'])
-        print(day_ex)
-        print(comp_day_ex)
+        # print(day_ex)
+        # print(comp_day_ex)
 
         return np.array_equal(day_ex.values, comp_day_ex.values)
+
 
     def aggregated_micro_rating(self, micro_series):
         # print(micro_series['workingdays'].columns)
@@ -401,6 +419,7 @@ class Genetic_Class:
         # print(total_points)
         return total_points
 
+
     def create_next_gen_micro(self, micro_series):
         # TODO: finish this method add hyp and lean mass
         # if micro_series['micro_type'] == 'Strength':
@@ -410,6 +429,7 @@ class Genetic_Class:
         child = self.micro_mutation_chance(self.mutation_rate, child)
         
         return child
+
 
     def micro_crossover(self, parent_df, usr_lvl, goal, no_days):
         day_arr1 = np.array(parent_df.iloc[0,:]['workingdays'])
@@ -426,6 +446,7 @@ class Genetic_Class:
         
         return child
 
+
     def micro_mutation_chance(self, mutation_rate, child):
         child_micro_df = pd.DataFrame(child['workingdays'], columns = ['day','day_rating','day_type','exercises','ex_l_len','goal','usr_lvl','normalized_score','pop_num'])
         child_micro_df['rand_chance'] = np.random.uniform(low=0,high=1, size=child_micro_df.shape[0])
@@ -441,6 +462,7 @@ class Genetic_Class:
         
         return child
 
+
     def mic_mutation(self, mutatable_df):
 
         mutated_df = pd.DataFrame(columns = mutatable_df.columns)
@@ -448,8 +470,11 @@ class Genetic_Class:
         mutated_df.index = mutatable_df.index
         return mutated_df
 
+
     def micro_3_evolution(self, m_pop_size, dna_days_upper, dna_days_lower):
         pass
+
+
     # USED IN START EVO
     def micro_4_evolution(self, m_pop_size, dna_days_upper, dna_days_lower):
         dna_microcycles = pd.DataFrame(index=range(m_pop_size), columns = self.micro_cols)
@@ -474,6 +499,8 @@ class Genetic_Class:
         return dna_microcycles.sort_values(by='micro_rating', ascending=False)
     
     def create_micro(self):
+        u_best_days = self.upper_mating_pool[self.upper_mating_pool['day_rating'] > 2000]
+        l_best_days = self.lower_mating_pool[self.lower_mating_pool['day_rating'] > 2000]
         microcyc = pd.DataFrame(columns=['day','day_rating','day_type','exercises',
         'ex_l_len','goal','usr_lvl','normalized_score','pop_num'])
 
@@ -485,7 +512,17 @@ class Genetic_Class:
             get 1 B_day of day_type z that is not A_day and high rating
         '''
         if self.no_days == 4:
-            microcyc.append(self.upper_mating_pool[self.upper_mating_pool['day_rating'] > 2000])
+            print('ASSEMBLING MICROCYCLE')
+            # microcyc = microcyc.append(self.upper_mating_pool[self.upper_mating_pool['day_rating'] > 2000])
+            # microcyc = microcyc.append(self.lower_mating_pool[self.lower_mating_pool['day_rating'] > 2000])
+            microcyc = microcyc.append(u_best_days.iloc[[0]])
+            microcyc = microcyc.append(l_best_days.iloc[[0]])
+            microcyc = microcyc.append(self.no_dup_days_comparable(microcyc.iloc[[0]], u_best_days))
+            microcyc = microcyc.append(self.no_dup_days_comparable(microcyc.iloc[[1]], l_best_days))
+            # pp.pprint(microcyc)
+            print('CREATE_MICRO RESULT: ', len(microcyc))
+        return microcyc
+
 
     def start_evolution(self):
         '''
@@ -558,7 +595,10 @@ class Genetic_Class:
         if self.usr_lvl == 'beginner' and self.no_days == 4:
             # return self.micro_4_evolution(m_pop_size, dna_days_upper, dna_days_lower)
             # NOTE: testing no dup days comparable
-            upday_sec = self.no_dup_days_comparable(self.upper_mating_pool.iloc[[0]], self.upper_mating_pool)
+            # upday_sec = self.no_dup_days_comparable(self.upper_mating_pool.iloc[[0]], self.upper_mating_pool)
+            # lowerday_sec = self.no_dup_days_comparable(self.lower_mating_pool.iloc[[0]], self.lower_mating_pool)
+            return self.create_micro()
+
         elif(self.usr_lvl == 'beginner' and self.no_days == 3):
             # TODO implement 3 day, 2_day
             return 

@@ -2,27 +2,9 @@
 <html>
     <body>
         <div>
-            {%for microcycl in results%}
-                {%set workingdays = microcycl['workingdays']%}
-                {%for workingday in workingdays%}
-                    {%set i = loop.index%}
-                     <h1>day: {{i}}</h1>
-                    {%for day_key,day_value in workingday.items()%}
-                        {%if day_key == 'exercises'%}
-                            <h2>Exercises</h2>
-                            {%set ex_l = day_value%}
-                            {%for ex in ex_l%}
-                                <h3>{{ex['ex_name']}}</h3>
-                                <p>{{ex['ex_equipment']}}</p>
-                                <p>reps: {{ex['reps']}}</p>
-                                <p>sets: {{ex['sets']}}</p>
-                            {%endfor%}
-                        {%endif%}
-                        
-                    {%endfor%}
-                {%endfor%}}
-            {%endfor%}}
-            {# {%for value in results%}
+            {%for value in results%}
+                {%set i = loop.index%}
+                <h1>Day: {{i}}</h1>
                 {%if 'workingdays' in value%}
                     {% set ex_l = value['exercises']%}
                     <h3>Exercises</h3>
@@ -30,9 +12,16 @@
                         <p>{{e}}</p>
                     {%endfor%}
                 {%endif%}
-                <p>{{value}}</p>
-
-            {%endfor%} #}
+                {%for ex in value['exercises']%}
+                    <ul>
+                        <li><h3>{{ex['ex_name']}}</h3></li>
+                        <li>Muscle: {{ex['main-muscle-worked']}}</li>
+                        <li>Equipment: {{ex['ex_equipment']}}</li>
+                        <li>Load Size: {{ex['load_size']}}</li>
+                        <li>Reps: {{ex['reps']}} Sets: {{ex['sets']}}</li>
+                    </ul>
+                {%endfor%}
+            {%endfor%}
         </div>
     </body>
 </html>

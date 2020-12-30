@@ -1,5 +1,7 @@
 # import new_ga
 # TODO: LOOK INTO REDIS TO HOLD DATA FROM GA
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 import genetic_class as gc
 import plan_filter as pf
 from flask import Flask, render_template, request, jsonify
@@ -43,10 +45,14 @@ def show_exercise_form():
         ga_input.no_ex.data)
 
         print(gen_c.usr_lvl, gen_c.goal, gen_c.no_days, gen_c.ex_len)
+        print('sending to ga')
         result_list = gen_c.start_evolution()
+        print('finished ga')
         result_list = json.loads(result_list.to_json(orient='records'))
         
         print(type(result_list))
+        pp.pprint(result_list[0])
+        print(len(result_list))
         return render_template('exercise_result.html', results = result_list)
     return render_template('exerciseform.html', form=ga_input)
     # ANGULAR INTERGRATION
