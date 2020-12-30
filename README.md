@@ -7,8 +7,8 @@ The algorithm uses a web scraped set of exercises that have been edited and appr
 
 #### Plan Options currently supported
 
- Beginner | Intermediate | Advanced | # of Days
----------|---------|----------|---------|---------
- Strength | Strength | Strength | 2 - 5
- Hypertrophy | Hypertrophy | Hypertrophy | 2 - 5
+| Beginner  | Intermediate | Advanced | # of Days
+| ------------- | ------------- | ------------- | ------------- |
+| Strength | Strength | Strength | 2 - 5  |
+| Hypertrophy | Hypertrophy | Hypertrophy | 2 - 5  |
  
