@@ -592,6 +592,7 @@ class Genetic_Class:
             TODO: determine if its better to manually select days vs evolution 
             """
         # TODO: different functions for each microcycle length type (4,3,2) etc
+        # TODO: remove usr_lvl from logic see if it needs to be used elsewhere if not remove
         if self.usr_lvl == 'beginner' and self.no_days == 4:
             # return self.micro_4_evolution(m_pop_size, dna_days_upper, dna_days_lower)
             # NOTE: testing no dup days comparable
