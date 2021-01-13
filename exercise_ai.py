@@ -15,6 +15,7 @@ from flask_cors import CORS, cross_origin
 # folder in same level as app.py
 app = Flask('__name__')
 # TODO: look at chap 7 on how to embed key in env var 
+#TODO: if 3 day plan selected add form field for focus day, else focus_day=None
 app.config['SECRET_KEY'] = 'hard to guess string'
 CORS(app)
 

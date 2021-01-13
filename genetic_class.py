@@ -1,5 +1,6 @@
 import numpy as np
 import operator as op
+from numpy.lib.arraysetops import unique
 import pandas as pd
 from pandas.io.json import json_normalize
 import pprint
@@ -25,6 +26,7 @@ class Genetic_Class:
     def __init__(self, usr_lvl, goal, no_days, no_exs):
         self.usr_lvl = usr_lvl
         self.goal = goal
+        # self.focus_day = focus_day
         self.no_days = int(no_days)
         self.ex_len = int(no_exs)
         self.upper_mating_pool = None
@@ -39,6 +41,7 @@ class Genetic_Class:
 # combined total,lower,upper from new_ga
     def create_genes(self, gene_type = None):
         '''
+        function utilized in create_day_pheno
         gene_type default to None, creates 
         genes for fullbody 
         '''
@@ -70,7 +73,7 @@ class Genetic_Class:
 
 
 # combined the up day lwday and fb day from new_ga
-    def create_day_pheno(self, gene_type):
+    def create_day_pheno(self, gene_type = None):
         '''
         # generate exercises based on gene type aka genes for a day pheno
         '''
@@ -325,17 +328,38 @@ class Genetic_Class:
 
 # TODO: implement 2day assessment
     def assess_2_day(self, wdays):
-        pass
+        # each day needs to be unique
+        # for each day in wdays extract ex names
+        
 
+    
+    
+    # def evolution_process(self, num_days):
+    #     if num_days == 4:
+    #         pass
+    #     elif (num_days == 3):
+    #         pass
+    #     else:
+            pass
 
+    
     def rate_fbody_day(self, ex_df):
-        points = 0
+        # NOTE: at this point the day should have been assessed 
+        # for cascading ex sizes
+        # TODO: choose one condition over the other based on 
+        # focus_day for a 3 day plan
         ex_mg = ex_df['muscle_group'].values
         con1 = np.empty((len(ex_df),))
         con2 = np.empty((len(ex_df),))
+        # first condition is for lowerbody
+        # every other ex is lowerbody
         con1[::2] ='lowerbody'
+        # every other, starting from second element is upperbody
         con1[1::2] ='upperbody'
+        # the second condition for upperbody goal
+        # every other ex is upperbody
         con2[::2] ='upperbody'
+        # every other, starting from second element is lowerbody
         con2[1::2] ='lowerbody'
         conditions = [
             np.array_equal(ex_mg, con1), np.array_equal(ex_mg, con2)
@@ -354,7 +378,7 @@ class Genetic_Class:
         for ex len 5 = 50 and so on else -50
         """
         ex_arr = np.array([])
-        for index,row in wdays.iterrows():
+        for _, row in wdays.iterrows():
             ex_df = pd.DataFrame(row['exercises'], columns = ['ex_name',
             'muscle_group','ex_mech_type','ex_type','ex_equipment','level',
             'reps','sets','main-muscle-worked','movement_size','load_size'])
@@ -369,7 +393,7 @@ class Genetic_Class:
 
     def no_dup_days_comparable(self, day, day_pool):
         '''
-        Given a day pool, get only the top rated days
+        Given a day pool and a day, get only the top rated days
         Return a day from day_pool if it's exercises are not the same as day's exercises
         '''
         ex_cols = ['ex_name',
@@ -378,23 +402,31 @@ class Genetic_Class:
 
         # NOTE: may need to change from max to a range
         # make sure the days selected are a good rating
-        day_pool = day_pool[day_pool['day_rating'] == day_pool['day_rating'].max()]
+        # NOTE: NOT NEEDED SINCE YOU FILTER BEFORE ENTERING THIS FUNCTION
+        # day_pool = day_pool[day_pool['day_rating'] == day_pool['day_rating'].max()]
         print('===================')
     
     # TODO: try catch block for if return never reached
         for _, day_comp in day_pool.iterrows():
-            if not self.compare_day_exs(day, day_comp):
-                print('day_comp is the not same as day')
+            if not self.compare_day_exs(day['exercises'], day_comp):
+                print('day_comp is not same as day')
                 return day_comp
             
     
-    def compare_day_exs(self, day, comp_day):
-        day_ex = pd.DataFrame(day['exercises'])
+    def compare_day_exs(self, day_ex, comp_day):
+        print(type(comp_day),'THIS IS COMP DAY')
+        # TODO: FIND A BETTER WAY TO DO THIS.
+        for ex in day_ex:
+            ex_df = pd.DataFrame(ex, columns = ['ex_name',
+            'muscle_group','ex_mech_type','ex_type','ex_equipment','level',
+            'reps','sets','main-muscle-worked','movement_size','load_size'])
+            pp.pprint(ex_df)
+            ex_name_arr = ex_df['ex_name'].values
         comp_day_ex = pd.DataFrame(comp_day['exercises'])
-        # print(day_ex)
-        # print(comp_day_ex)
-
-        return np.array_equal(day_ex.values, comp_day_ex.values)
+        comp_day_ex_arr = comp_day_ex['ex_name'].values
+        print(ex_name_arr, comp_day_ex_arr)
+        print(np.array_equal(ex_name_arr, comp_day_ex_arr), 'ARRAY EQUAL RESULT')
+        return np.array_equal(ex_name_arr, comp_day_ex_arr)
 
 
     def aggregated_micro_rating(self, micro_series):
@@ -499,28 +531,35 @@ class Genetic_Class:
         return dna_microcycles.sort_values(by='micro_rating', ascending=False)
     
     def create_micro(self):
+        '''
+        TODO: NOT ENOUGH DIVERSITY IN FULL DAYS. NEED TO FIGURE OUT HOW TO MAKE IT BETTER
+        '''
+        if self.no_days == 3 or self.no_days == 2:
+            f_best_days = self.full_mating_pool[self.full_mating_pool['day_rating'] > 2000]
+
         u_best_days = self.upper_mating_pool[self.upper_mating_pool['day_rating'] > 2000]
         l_best_days = self.lower_mating_pool[self.lower_mating_pool['day_rating'] > 2000]
+        
         microcyc = pd.DataFrame(columns=['day','day_rating','day_type','exercises',
         'ex_l_len','goal','usr_lvl','normalized_score','pop_num'])
 
-        '''
-        if no_day == 4
-            get 1 A_day of day_type y and high rating
-            get 1 B_day of day_type y that is not A_day and high rating
-            get 1 A_day of day_type z and high rating
-            get 1 B_day of day_type z that is not A_day and high rating
-        '''
         if self.no_days == 4:
             print('ASSEMBLING MICROCYCLE')
-            # microcyc = microcyc.append(self.upper_mating_pool[self.upper_mating_pool['day_rating'] > 2000])
-            # microcyc = microcyc.append(self.lower_mating_pool[self.lower_mating_pool['day_rating'] > 2000])
             microcyc = microcyc.append(u_best_days.iloc[[0]])
             microcyc = microcyc.append(l_best_days.iloc[[0]])
             microcyc = microcyc.append(self.no_dup_days_comparable(microcyc.iloc[[0]], u_best_days))
             microcyc = microcyc.append(self.no_dup_days_comparable(microcyc.iloc[[1]], l_best_days))
-            # pp.pprint(microcyc)
             print('CREATE_MICRO RESULT: ', len(microcyc))
+        elif self.no_days == 3:
+            # grab one from each pool up,low,full
+            microcyc = microcyc.append(u_best_days.iloc[[0]])
+            microcyc = microcyc.append(f_best_days.iloc[[0]])
+            microcyc = microcyc.append(l_best_days.iloc[[0]])
+        elif self.no_days == 2:
+            # TODO: FINISH THIS 
+            microcyc = microcyc.append(f_best_days.iloc[[0]])
+            microcyc = microcyc.append(self.no_dup_days_comparable(microcyc.iloc[[0]], f_best_days))
+            
         return microcyc
 
 
@@ -531,13 +570,12 @@ class Genetic_Class:
         they might cause issues if they are the wrong amount of columns
         original implemntation first created day cols w.o norm score and popnum then eventually added them
         '''
-
+        print('num days', self.no_days)
         pop_size = 1000
         m_pop_size = 6
+        
         dna_days_lower = pd.DataFrame(index=range(pop_size), columns=self.n_day_cols)
         dna_days_upper = pd.DataFrame(index=range(pop_size), columns=self.n_day_cols)
-        # dna_microcycles = pd.DataFrame(index=range(m_pop_size), columns=self.micro_cols)
-        # self.microcyc_gene_pool
 
         dna_days_upper = dna_days_upper.apply(lambda x: self.create_day_pheno(gene_type = 'upperbody'), axis=1)
         dna_days_lower = dna_days_lower.apply(lambda x: self.create_day_pheno(gene_type = 'lowerbody'), axis=1)
@@ -553,36 +591,109 @@ class Genetic_Class:
 
         score_diff = 0
         score_diff_lw = 0
-
+        
         prev_score = np.mean(dna_days_upper['normalized_score'])
         prev_score_lw = np.mean(dna_days_lower['normalized_score'])
+
+        if self.no_days == 3 or self.no_days == 2:
+            score_diff_full = 0
+            dna_days_full = dna_days_lower.append(dna_days_upper)
+            dna_days_full = dna_days_full.sample(frac=1)
+            self.full_mating_pool = self.generate_mating_pool(dna_days_full)
+
+        # seperate scores for each day type
         curr_score = 0
         curr_score_lw = 0
-        while (score_diff < .01) and (score_diff_lw < .01):
-            prev_score = np.mean(dna_days_upper['normalized_score'])
-            prev_score_lw = np.mean(dna_days_lower['normalized_score'])
-            # CREATE THE NEXT GENERATION AFTER INIT
-            dna_days_upper = dna_days_upper.apply(self.create_next_gen, axis=1)
-            dna_days_lower = dna_days_lower.apply(self.create_next_gen, axis=1)
-            # RATE THE NEW GENERATION
-            dna_days_upper['day_rating'] = dna_days_upper.apply(
-                self.aggregated_day_rating, axis=1)
+        curr_score_full = 0
+        if self.no_days == 4:
+            while (score_diff < .01) and (score_diff_lw < .01):
+                # TODO: parallelize this so that you do lower and upper simultaniously
+                    prev_score = np.mean(dna_days_upper['normalized_score'])
+                    prev_score_lw = np.mean(dna_days_lower['normalized_score'])
+                    # CREATE THE NEXT GENERATION AFTER INIT
+                    dna_days_upper = dna_days_upper.apply(self.create_next_gen, axis=1)
+                    dna_days_lower = dna_days_lower.apply(self.create_next_gen, axis=1)
+                    # RATE THE NEW GENERATION
+                    dna_days_upper['day_rating'] = dna_days_upper.apply(
+                        self.aggregated_day_rating, axis=1)
 
-            dna_days_lower['day_rating'] = dna_days_lower.apply(
-                self.aggregated_day_rating, axis=1)
-            # NORMALIZE NEXT GEN SCORES
-            self.normalize_day_rating(dna_days_upper)
-            curr_score = np.mean(dna_days_upper['normalized_score'])
+                    dna_days_lower['day_rating'] = dna_days_lower.apply(
+                        self.aggregated_day_rating, axis=1)
+                    # NORMALIZE NEXT GEN SCORES
+                    self.normalize_day_rating(dna_days_upper)
+                    curr_score = np.mean(dna_days_upper['normalized_score'])
 
-            self.normalize_day_rating(dna_days_lower)
-            curr_score_lw = np.mean(dna_days_lower['normalized_score'])
-            # CREATE THE MATING POOL OF NEXT GEN
-            self.upper_mating_pool = self.generate_mating_pool(dna_days_upper)
-            self.lower_mating_pool = self.generate_mating_pool(dna_days_lower)
-            score_diff = curr_score - prev_score
-            score_diff_lw = curr_score_lw - prev_score_lw
-        
+                    self.normalize_day_rating(dna_days_lower)
+                    curr_score_lw = np.mean(dna_days_lower['normalized_score'])
+                    # CREATE THE MATING POOL OF NEXT GEN
+                    self.upper_mating_pool = self.generate_mating_pool(dna_days_upper)
+                    self.lower_mating_pool = self.generate_mating_pool(dna_days_lower)
 
+                    score_diff = curr_score - prev_score
+                    score_diff_lw = curr_score_lw - prev_score_lw
+        elif self.no_days == 3:
+            while (score_diff < .01) and (score_diff_lw < .01) and (score_diff_full < .01):
+                #COMPLETED: finish this add full day
+                prev_score = np.mean(dna_days_upper['normalized_score'])
+                prev_score_lw = np.mean(dna_days_lower['normalized_score'])
+                prev_score_full = np.mean(dna_days_full['normalized_score'])
+
+                # CREATE THE NEXT GENERATION AFTER INIT
+                dna_days_upper = dna_days_upper.apply(self.create_next_gen, axis=1)
+                dna_days_lower = dna_days_lower.apply(self.create_next_gen, axis=1)
+                dna_days_full = dna_days_full.apply(self.create_next_gen, axis=1)
+
+                # RATE THE NEW GENERATION
+                dna_days_upper['day_rating'] = dna_days_upper.apply(
+                    self.aggregated_day_rating, axis=1
+                    )
+
+                dna_days_lower['day_rating'] = dna_days_lower.apply(
+                    self.aggregated_day_rating, axis=1
+                    )
+
+                dna_days_full['day_rating'] = dna_days_full.apply(
+                    self.aggregated_day_rating, axis=1
+                )
+                # NORMALIZE NEXT GEN SCORES
+                self.normalize_day_rating(dna_days_upper)
+                curr_score = np.mean(dna_days_upper['normalized_score'])
+
+                self.normalize_day_rating(dna_days_lower)
+                curr_score_lw = np.mean(dna_days_lower['normalized_score'])
+
+                self.normalize_day_rating(dna_days_full)
+                curr_score_full = np.mean(dna_days_full['normalized_score'])
+                
+                # CREATE THE MATING POOL OF NEXT GEN
+                self.upper_mating_pool = self.generate_mating_pool(dna_days_upper)
+                self.lower_mating_pool = self.generate_mating_pool(dna_days_lower)
+                self.full_mating_pool = self.generate_mating_pool(dna_days_full)
+
+                score_diff = curr_score - prev_score
+                score_diff_lw = curr_score_lw - prev_score_lw
+                score_diff_full = curr_score_full - prev_score_full
+                print(format(score_diff_full, '.6f'))
+        else:
+            # two days
+            # TODO: only full body dna
+            while (score_diff_full < .01):
+                # save prev score
+                prev_score_full = np.mean(dna_days_full['normalized_score'])
+                # make next gen
+                dna_days_full = dna_days_full.apply(self.create_next_gen, axis=1)
+                # assess fitness
+                dna_days_full['day_rating'] = dna_days_full.apply(
+                    self.aggregated_day_rating, axis=1
+                )
+                # normalize score and save to compare
+                self.normalize_day_rating(dna_days_full)
+                curr_score_full = np.mean(dna_days_full['normalized_score'])
+                # new mating pool
+                self.full_mating_pool = self.generate_mating_pool(dna_days_full)
+                # get score diff
+                score_diff_full = curr_score_full - prev_score_full
+                print(format(score_diff_full, '.6f'))
             """
             NOTE: NEXT STEPS: FROM THE DAYS CREATE USE THEM AS GENES FOR MICROCYCLES
             Combine the upper days and lower days into one gene pool
@@ -593,15 +704,5 @@ class Genetic_Class:
             """
         # TODO: different functions for each microcycle length type (4,3,2) etc
         # TODO: remove usr_lvl from logic see if it needs to be used elsewhere if not remove
-        if self.usr_lvl == 'beginner' and self.no_days == 4:
-            # return self.micro_4_evolution(m_pop_size, dna_days_upper, dna_days_lower)
-            # NOTE: testing no dup days comparable
-            # upday_sec = self.no_dup_days_comparable(self.upper_mating_pool.iloc[[0]], self.upper_mating_pool)
-            # lowerday_sec = self.no_dup_days_comparable(self.lower_mating_pool.iloc[[0]], self.lower_mating_pool)
-            return self.create_micro()
-
-        elif(self.usr_lvl == 'beginner' and self.no_days == 3):
-            # TODO implement 3 day, 2_day
-            return 
-        else:
-            return 'need to add more features - stick to just four day plans for now'
+        
+        return self.create_micro()
