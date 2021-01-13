@@ -556,7 +556,8 @@ class Genetic_Class:
             microcyc = microcyc.append(f_best_days.iloc[[0]])
             microcyc = microcyc.append(l_best_days.iloc[[0]])
         elif self.no_days == 2:
-            # TODO: FINISH THIS 
+            # COMPLETED: FINISH THIS 
+            # TODO: MORE DIVERSITY IS REQUIRED TOO MANY DUPLICATE EXERCISES
             microcyc = microcyc.append(f_best_days.iloc[[0]])
             microcyc = microcyc.append(self.no_dup_days_comparable(microcyc.iloc[[0]], f_best_days))
             
@@ -570,9 +571,14 @@ class Genetic_Class:
         they might cause issues if they are the wrong amount of columns
         original implemntation first created day cols w.o norm score and popnum then eventually added them
         '''
+        # m_pop_size = 6
         print('num days', self.no_days)
-        pop_size = 1000
-        m_pop_size = 6
+        if self.no_days == 2:
+            # NOTE: temporary fix for more diversity for full day plan
+            pop_size = 3000
+        else:
+            pop_size = 1000
+        
         
         dna_days_lower = pd.DataFrame(index=range(pop_size), columns=self.n_day_cols)
         dna_days_upper = pd.DataFrame(index=range(pop_size), columns=self.n_day_cols)
@@ -594,7 +600,7 @@ class Genetic_Class:
         
         prev_score = np.mean(dna_days_upper['normalized_score'])
         prev_score_lw = np.mean(dna_days_lower['normalized_score'])
-
+            
         if self.no_days == 3 or self.no_days == 2:
             score_diff_full = 0
             dna_days_full = dna_days_lower.append(dna_days_upper)
