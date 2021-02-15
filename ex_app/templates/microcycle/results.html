@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-wrapper container">
+    <div class="row plan-form align-self-center">
+        <div class="col">
+            <div class="card-group">
+                {%for value in results%}
+                <div class="card">
+                    {%set i = loop.index%}
+                    <div class="card-body">
+                        <h1 class="card-title">Day {{i}} {{value['day_type']}}</h1>
+                        {%for ex in value['exercises']%}
+                            <h3 class="card-text">{{ex['ex_name']}}</h3>
+                            <ul>
+                                <li class="card-text">Muscle: {{ex['main-muscle-worked']}}</li>
+                                <li class="card-text">Equipment: {{ex['ex_equipment']}}</li>
+                                <li class="card-text">Load Size: {{ex['load_size']}}</li>
+                                <li class="card-text">Reps: {{ex['reps']}} Sets: {{ex['sets']}}</li>
+                            </ul>
+                        {%endfor%}
+                    </div>
+                </div>
+                {%endfor%}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

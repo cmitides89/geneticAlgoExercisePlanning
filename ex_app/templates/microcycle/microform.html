@@ -1,0 +1,38 @@
+
+    {% extends "base.html"%}
+    {% block content %}
+        <div class="form-wrapper container">
+            <form class="plan-form" method="POST" action="{{url_for('.show_exercise_form')}}">
+                <div class="row">
+                    <h2 class="title text-center">Make a Program</h2>
+                </div>
+                
+                    {{ form.csrf_token }}
+                    {% for field in form %}
+                        {% if not loop.last %}
+                            <div class="form-spacing row">
+                                <div class="col-lg-2">
+
+                                </div>
+                                <div class="col-lg-2 text-center align-middle">
+                                    {{field.label(class_="algo-input-type")}}
+                                </div>
+                                {% if field.type == "RadioField" %}
+                                <div class="col-lg-6">
+                                    <div class="radio-toolbar text-center">
+                                        {% for subfield in field %}
+                                            {{subfield}}
+                                            {{subfield.label(class_="border-btn")}}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}<!--end radiofield if-->
+                            </div><!--end of form spacing row-->
+                        {% endif %} <!--end loop last if-->
+                    {% endfor %}
+                    <div class="text-center row">
+                        <input type="submit" class="submit-btn" align=middle value="let's do it">
+                    </div>
+            </form>
+        </div>
+    {% endblock %}
