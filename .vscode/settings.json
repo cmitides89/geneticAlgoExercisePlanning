@@ -1,5 +1,0 @@
-{
-    "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true,
-    "python.pythonPath": "c:\\Users\\dinom\\Documents\\py_projects\\bottle_microservice\\.venv\\Scripts\\python.exe"
-}
